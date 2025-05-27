@@ -13,18 +13,50 @@ import requests
 import warnings
 import sys
 
-# Fix: Suppress Streamlit cache warnings  
+# Fix: Suppress Streamlit cache warnings
 warnings.filterwarnings("ignore", message="coroutine 'expire_cache' was never awaited")
 warnings.filterwarnings("ignore", category=RuntimeWarning, module="streamlit")
 
+# Set base path for Streamlit Cloud or local use
+ROOT = Path(__file__).parent.resolve()
 
-# Page configuration (must be the first Streamlit command)
+# --- Page config ---
 st.set_page_config(
-    page_title="EKoderLocal – Privacy-First ED Code Classifier",
-    page_icon="🔒",
+    page_title="EKoderLocalCloud – ED Code Classifier",
+    page_icon="💡",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
+
+# --- Load custom styles ---
+def local_css(path):
+    try:
+        with open(path) as f:
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+    except Exception as e:
+        st.warning(f"⚠️ CSS load failed: {e}")
+
+local_css(ROOT / "ekoderlocal_styles.css")
+
+# --- Display logo if found ---
+logo_path = ROOT / "logo.png"
+if logo_path.exists():
+    logo = Image.open(logo_path)
+    st.image(logo, width=160)
+else:
+    st.markdown("## EKoderLocalCloud")
+
+# --- Title & intro ---
+st.markdown("<h1 style='color:#007AC1;'>💡 EKoderLocalCloud</h1>", unsafe_allow_html=True)
+st.markdown("""
+Welcome to **EKoderLocalCloud** — an AI-powered coding tool for Emergency Departments.
+
+This tool uses a local or cloud-based LLM to suggest up to 4 ICD-10-AM principal diagnoses based on free-text case notes. All processing is private and no patient data leaves the session.
+
+---
+""", unsafe_allow_html=True)
+
+# === Ollama Integration Functions ===
 
 # === Ollama Integration Functions ===
 def check_ollama_status():
