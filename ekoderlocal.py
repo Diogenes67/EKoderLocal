@@ -348,19 +348,33 @@ def load_examples(path, limit=3):
         return ""
 
 def parse_response(resp, df):
-    """Parse the LLM response to extract ICD codes and explanations."""
+    """Parse the LLM response to extract ICD codes and explanations (Llama 3 format)."""
     valid = set(df['ED Short List code'].astype(str).str.strip())
     term = dict(zip(df['ED Short List code'], df['ED Short List Term']))
     funding_lookup = dict(zip(df['ED Short List code'], df['Scale'].fillna(3).astype(int)))
-    
+
     rows = []
+    current_code = None
+    current_expl = ""
+
     for line in resp.splitlines():
-        # Updated regex to handle Llama 3 format: 1. CODE — Description — "rationale"
-        m = re.match(r"\d+\.\s*([A-Z0-9\.]+)\s*[—-]\s*\"?([^\"]*)\"?", line)
-        if m:
-            code, expl = m.groups()
-            if code in valid and code != 'R69':
-                rows.append((code, term[code], expl.strip('"').strip("'"), get_funding_emoji(code, funding_lookup)))
+        code_match = re.match(r"\d+\.\s*([A-Z0-9\.]+)\s*[—-]\s*(.+)", line)
+        expl_match = re.match(r"\*\s*(.+)", line)
+
+        if code_match:
+            current_code = code_match.group(1).strip()
+            current_expl = ""
+        elif expl_match and current_code:
+            current_expl = expl_match.group(1).strip()
+            if current_code in valid and current_code != 'R69':
+                rows.append((
+                    current_code,
+                    term.get(current_code, "N/A"),
+                    current_expl,
+                    get_funding_emoji(current_code, funding_lookup)
+                ))
+            current_code = None
+
     return rows
 
 def process_batch_files_local(uploaded_files, excel_path, jsonl_path, embedding_cache_path):
@@ -528,7 +542,7 @@ if st.button("Classify Note", type="primary", disabled=not bool(note_text and LO
         with st.spinner("Consulting local LLM for diagnosis..."):
             # Query local LLM
             resp = predict_final_codes_local(note_text, shortlist, fewshot)
-            print(f"DEBUG - Raw LLM Response: {resp}")            
+            print("🧠 LLM Raw Response:\n", resp)
             if resp is None:
                 st.error("Failed to get response from local LLM.")
                 st.stop()
