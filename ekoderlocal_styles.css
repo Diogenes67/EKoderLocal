@@ -1,0 +1,43 @@
+/* Force navy text on everything */
+* {
+    color: #003366 !important;
+}
+
+html, body, div, span, p, h1, h2, h3, h4, h5, h6, 
+label, input, textarea, pre, code,
+.stApp, .stApp *, .main *, .element-container *, 
+.stMarkdown *, .stText *, .stInfo *, .stSuccess *, 
+.stWarning *, .stError *, .stExpander *,
+div[data-testid="stExpander"] *,
+div[data-testid="stDataFrame"] *,
+.streamlit-expanderHeader *,
+.streamlit-expanderContent * {
+    color: #003366 !important;
+    background-color: #e8f4f0 !important;
+}
+
+/* Buttons stay white text */
+.stButton > button {
+    background-color: #004080 !important;
+    color: white !important;
+    cursor: pointer !important;
+}
+
+/* Input fields white background */
+.stTextArea textarea,
+.stTextInput input {
+    background-color: white !important;
+    color: #003366 !important;
+}
+
+/* Tables */
+div[data-testid="stDataFrame"] {
+    background-color: white !important;
+}
+
+/* SVG text */
+svg text, svg * {
+    fill: #003366 !important;
+    color: #003366 !important;
+}
+/* Updated: Tue 27 May 2025 19:22:09 ACST */
